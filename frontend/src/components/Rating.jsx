@@ -1,5 +1,4 @@
 const Rating = ({ value, text, color }) => {
-  console.log(value);
   return (
     <>
       <span>
