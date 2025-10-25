@@ -6,10 +6,9 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import HomeScreen from "./components/screens/HomeScreen";
 import ProductScreen from "./components/screens/ProductScreen";
+import CartScreen from "./components/screens/CartScreen";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <Router>
@@ -20,6 +19,7 @@ function App() {
             <Routes>
               <Route path='/' element={<HomeScreen />} />
               <Route path='/product/:id' element={<ProductScreen />} />
+              <Route path='/cart/:id?' element={<CartScreen />} />
             </Routes>
           </Container>
         </main>
