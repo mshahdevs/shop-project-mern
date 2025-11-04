@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 
 const Product = ({ product }) => {
   return (
-    <Card border='secondary' className='rounded  p-3 my-3'>
-      <Link to={`/product/${product._id}`}>
-        <Card.Img src={product.image} variant='top' />
+    <Card border='secondary' className='rounded p-3 my-3 h-100 product-card'>
+      <Link to={`/product/${product._id}`} className="d-block text-center">
+        <Card.Img src={product.image} variant='top' className="product-image" />
       </Link>
       <Card.Body>
         <Link to={`/product/${product._id}`}>
