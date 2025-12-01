@@ -26,12 +26,21 @@ const authUser = async (req, res) => {
 
 const userRegister = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
+
+    // basic validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email and password are required" });
+    }
+
+    // normalize email
+    email = String(email).trim().toLowerCase();
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      res.status(400);
-      throw new Error("User already exists");
+      return res.status(400).json({ message: "User already exists" });
     }
+
     const user = await User.create({ name, email, password });
     if (user) {
       res.status(201).json({
@@ -42,10 +51,11 @@ const userRegister = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(400);
-      throw new Error("Invalid user data");
+      return res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
+    console.error("userRegister error:", error);
+    if (res.headersSent) return;
     res.status(500).json({ message: error.message });
   }
 };
