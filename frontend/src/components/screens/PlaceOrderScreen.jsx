@@ -1,25 +1,45 @@
 import { Link ,useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import FormContainer from "../FormContainer";
-import { Button, Form, Row,Col, ListGroup,Image, Card } from "react-bootstrap";
-import { saveShippingAddress } from "../../actions/cartActions";
+import { Button,  Row,Col, ListGroup,Image, Card } from "react-bootstrap";
 import CheckoutSteps from "../CheckoutSteps";
 import Message from "../Message";
+import {createOrder} from "../../actions/orderActions";
+import { useEffect } from "react";
 
 const PlaceOrderScreen = () =>{
+    const dispatch = useDispatch();
     const cart = useSelector((state)=>state.cart)
+    const navigate = useNavigate();
     console.log(cart)
     // Calculate Prices
-    cart.itemsPrice = cart.cartItems.reduce((acc,item)=> acc + item.price * item.qty,0).toFixed(2)
-
-    cart.shippingPrice = cart.itemsPrice > 100 ? 0 : 100;
-    cart.taxPrice = Number(0.15 * cart.itemsPrice).toFixed(2);
-
-    function placeOrderHandler(){
-
+    function addDecimals(num){
+        return (Math.round(num * 100) / 100).toFixed(2);
     }
+    cart.itemsPrice = addDecimals(cart.cartItems.reduce((acc,item)=> acc + item.price * item.qty,0).toFixed(2));
+
+    cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100);
+    cart.taxPrice = addDecimals(Number(0.15 * cart.itemsPrice).toFixed(2));
+    cart.totalPrice = addDecimals((Number(cart.itemsPrice)+ Number(cart.shippingPrice) + Number(cart.taxPrice)).toFixed(2));
+    const orderCreate = useSelector((state)=> state.orderCreate);
+    const {order, success, error} = orderCreate;
+    function placeOrderHandler(){
+      dispatch(createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress: cart.shippingAddress,
+        paymentMethod: cart.paymentMethod,  
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice 
+      }))
+    }
+
+    useEffect(()=>{
+        if(success){
+            navigate(`/order/${order._id}`)
+        }  
+    },[navigate, success])
  return(
     <>
     <CheckoutSteps step1 step2 step3 />
@@ -87,7 +107,7 @@ const PlaceOrderScreen = () =>{
                                             <Row>
                                                 <Col>Shipping
                                                 </Col>
-                                                <Col>{cart.shippingPrice}</Col>
+                                                <Col>${cart.shippingPrice}</Col>
                                             </Row>
                                             
                                          </ListGroup.Item>
@@ -106,6 +126,9 @@ const PlaceOrderScreen = () =>{
                                                 <Col>${cart.totalPrice}</Col>
                                             </Row>
                                             
+                                         </ListGroup.Item>
+                                         <ListGroup.Item>
+                                            {error && <Message variant="danger">{error}</Message>}
                                          </ListGroup.Item>
                                           <ListGroup.Item>
                                             <Button type="button" className="btn-block" onClick={placeOrderHandler} disabled={cart.cartItems === 0} >Place Order</Button>
