@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 const productRoutes = require("./routes/productRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const userRoutes = require("./routes/userRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/orders", orderRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
