@@ -39,4 +39,25 @@ const getOrderById = async (req, res) => {
     }
 };
 
-module.exports = { addOrderItems, getOrderById };
+const updateOrderToPaid = async (req, res)=>{
+    try {
+        const order = await Order.findById(req.params.id);
+        if(order){
+            order.isPaid = true;
+            order.paidAt = Date.now();
+            order.paymentResult = {
+                id:req.body.id,
+                status:req.body.status,
+                update_time:req.body.update_time,
+                email_address:req.body.payer.email_address,
+
+            }
+            const updatedOrder = await order.save();
+            res.json(updatedOrder);
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+module.exports = { addOrderItems, getOrderById, updateOrderToPaid };
