@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+//Stripe 
+import {loadStripe } from '@stripe/stripe-js';
+import {Elements} from "@stripe/react-stripe-js";
+const stripePromise = loadStripe("pk_test_51PTJjMEHU399Ls8ZKijlXdMh3uLOhwJnHezb5wLxLWCmWxoCVrNFk8uLdowJweAUI52MvnEEPnmKDw4GAmxpoZeN00TijGwERD");
 //components
 import Header from "./components/Header";
 import Footer from "./components/Footer";
