@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const dotenv = require("dotenv");
@@ -25,6 +26,9 @@ const productRoutes = require("./routes/productRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
+app.use("/api/payments", paymentRoutes);
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
