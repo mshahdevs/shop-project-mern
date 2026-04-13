@@ -1,4 +1,4 @@
-import { ORDER_CREATE_REQUEST,ORDER_CREATE_SUCCESS, ORDER_DETAILS_REQUEST,ORDER_DETAILS_SUCCESS,ORDER_DETAILS_FAIL, ORDER_PAY_REQUEST,ORDER_PAY_RESET,ORDER_PAY_SUCCESS,ORDER_CREATE_FAIL,ORDER_PAY_FAIL} from "../constants/orderConstant";
+import { ORDER_CREATE_REQUEST,ORDER_CREATE_SUCCESS, ORDER_DETAILS_REQUEST,ORDER_DETAILS_SUCCESS,ORDER_DETAILS_FAIL, ORDER_PAY_REQUEST,ORDER_PAY_RESET,ORDER_PAY_SUCCESS,ORDER_CREATE_FAIL,ORDER_PAY_FAIL, PAYMENT_INTENT_REQUEST, PAYMENT_INTENT_SUCCESS, PAYMENT_INTENT_FAIL, PAYMENT_INTENT_RESET } from "../constants/orderConstant";
 
 export const orderCreateReducer = (state = {}, action) => {
     switch (action.type) {
@@ -47,7 +47,7 @@ export const orderDetailsReducer = (state={loading:true,order:{orderItems:[],shi
 export const orderPayReducer = (state={},action)=>{
     switch(action.type){
         case ORDER_PAY_REQUEST:
-            return {
+            return {  
                 loading:true
             }
         case ORDER_PAY_SUCCESS:
@@ -65,4 +65,28 @@ export const orderPayReducer = (state={},action)=>{
         default:
             return state;
     }   
+}
+
+export const paymentIntentReducer = (state={}, action)=>{
+    switch(action.type){
+        case PAYMENT_INTENT_REQUEST:
+            return {
+                loading: true
+            }
+        case PAYMENT_INTENT_SUCCESS:
+            return {
+                loading: false,
+                clientSecret: action.payload,
+                success: true
+            }
+        case PAYMENT_INTENT_FAIL:
+            return {
+                loading: false,
+                error: action.payload
+            }
+        case PAYMENT_INTENT_RESET:
+            return {}
+        default:
+            return state;
+    }
 }
