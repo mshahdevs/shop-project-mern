@@ -1,26 +1,87 @@
 import { Link ,useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../CheckoutForm";
 import { Button,  Row,Col, ListGroup,Image, Card } from "react-bootstrap";
 import Loader from "../Loader";
 import Message from "../Message";
-import {getOrderDetails} from "../../actions/orderActions";
+import {getOrderDetails, payOrder} from "../../actions/orderActions";
 import { useEffect } from "react";
+import { useState } from "react";
 const OrderScreen = () => {
+    const [sdkReady, setSdkReady] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
     const orderDetails = useSelector(state => state.orderDetails);
     const {loading,error,order} = orderDetails;
+    const orderPay = useSelector(state => state.orderPay);
+    const {loading:loadingPay,success:successPay} = orderPay;
+    const { userInfo } = useSelector((state) => state.userLogin);
+  const stripePromise = loadStripe("pk_test_51PTJjMEHU399Ls8ZKijlXdMh3uLOhwJnHezb5wLxLWCmWxoCVrNFk8uLdowJweAUI52MvnEEPnmKDw4GAmxpoZeN00TijGwERD");
+
     const {id} = useParams();
+    const dispatch = useDispatch();
+
      function addDecimals(num){
         return (Math.round(num * 100) / 100).toFixed(2);
     }
-    order.itemsPrice = addDecimals(order.orderItems.reduce((acc,item)=> acc + item.price * item.qty,0).toFixed(2));
-   
-    const dispatch = useDispatch();
-    useEffect(()=>{
+    
+    if (order && order.orderItems) {
+      order.itemsPrice = addDecimals(
+        order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+      );
+    }
+
+    useEffect(() => {
+      if (!order || order._id !== id || successPay) {
         dispatch(getOrderDetails(id));
-    },[dispatch,id])
-    return loading ? <Loader /> : error ? <Message variant="danger">{error}</Message> : <>
-    <h1>Order {order._id}</h1>
+      }
+    }, [dispatch, id, order, successPay]);
+
+    useEffect(() => {
+      const createPaymentIntent = async () => {
+        try {
+          const res = await fetch("/api/payments/create-payment-intent", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userInfo?.token}`,
+            },
+            body: JSON.stringify({ totalPrice: order.totalPrice }),
+          });
+
+          const data = await res.json();
+          setClientSecret(data.clientSecret);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      if (order && !order.isPaid && userInfo) {
+        createPaymentIntent();
+      }
+    }, [order, userInfo]);
+
+    const successPaymentHandler = (paymentResult) => {
+        console.log(paymentResult);
+        dispatch(payOrder(id,paymentResult));
+    }
+
+    // Show loading with text when initial loading or payment processing
+    if (loading || loadingPay) {
+      return (
+        <div className="text-center py-5">
+          <h3 className="mb-3">Loading</h3>
+          <Loader />
+        </div>
+      );
+    }
+
+    return error ? (
+      <Message variant="danger">{error}</Message>
+    ) : (
+      <>
+        <h1>Order {order._id}</h1>
     <Row>
     
         <Col md={8} >
@@ -112,12 +173,26 @@ const OrderScreen = () => {
                                                 </Row>
                                                 
                                              </ListGroup.Item>
+                                         {!order.isPaid && clientSecret && (
+  <ListGroup.Item>
+    <h5 className="mb-3">Pay with Stripe</h5>
+
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <CheckoutForm
+        clientSecret={clientSecret}
+        onPaymentSuccess={(paymentIntent) => {
+          dispatch(payOrder(id, paymentIntent));
+        }}
+      />
+    </Elements>
+  </ListGroup.Item>
+)}
                                              
                                         </ListGroup>
                                       </Card>
                                     </Col>
         </Row>
     </>
-}
+)}
 
 export default OrderScreen;
