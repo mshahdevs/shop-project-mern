@@ -4,27 +4,44 @@ const Order = require("../models/orderModel.js");
 // @route POST /api/orders
 // @access Private
 const addOrderItems = async (req, res) => {
-    const { orderItems, shippingAddress, paymentMethod, itemsPrice, taxPrice, shippingPrice, totalPrice } = req.body;
+  const {
+    orderItems,
+    shippingAddress,
+    paymentMethod,
+    itemsPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+    isPaid,
+    paidAt,
+    paymentResult,
+  } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
-        res.status(400);
-        throw new Error("No order items");
-    } else {
-        const order = new Order({
-            orderItems,
-            user: req.user._id,
-            shippingAddress,
-            paymentMethod,
-            itemsPrice,
-            taxPrice,
-            shippingPrice,
-            totalPrice,
-        });
-        const createdOrder = await order.save();
-        res.status(201).json(createdOrder);
-    }
+  if (orderItems && orderItems.length === 0) {
+    res.status(400);
+    throw new Error("No order items");
+  } else {
+    const order = new Order({
+      orderItems,
+      user: req.user._id,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      
+      isPaid: isPaid || false,
+      paidAt: isPaid ? paidAt : null,
+      paymentResult: paymentResult || {},
+     
+      isDelivered: false,
+    });
+
+    const createdOrder = await order.save();
+    res.status(201).json(createdOrder);
+  }
 };
-
 const getOrderById = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id).populate("user", "name email");
