@@ -8,7 +8,7 @@ import CheckoutSteps from "../CheckoutSteps";
 import Message from "../Message";
 import Loader from "../Loader";
 import CheckoutForm from "../CheckoutForm";
-import { createOrder, createPaymentIntent } from "../../actions/orderActions";
+import { createOrder, createPaymentIntent, resetOrder } from "../../actions/orderActions";
 
 const stripePromise = loadStripe("pk_test_51PTJjMEHU399Ls8ZKijlXdMh3uLOhwJnHezb5wLxLWCmWxoCVrNFk8uLdowJweAUI52MvnEEPnmKDw4GAmxpoZeN00TijGwERD");
 
@@ -24,6 +24,13 @@ const PlaceOrderScreen = () => {
 
   const [showPayment, setShowPayment] = useState(false);
 
+  // Reset order and payment state when cart items change
+  useEffect(() => {
+    dispatch(resetOrder());
+    setShowPayment(false);
+  }, [cart.cartItems, dispatch]);
+
+  // Check authentication and payment method
   useEffect(() => {
     if (!userInfo) {
       navigate("/login");
@@ -58,7 +65,7 @@ const PlaceOrderScreen = () => {
         console.error("Error creating payment intent:", err);
       }
     } else {
-      // PayPal flow
+      
       dispatch(
         createOrder({
           orderItems: cart.cartItems,
@@ -105,6 +112,13 @@ const PlaceOrderScreen = () => {
     }
   }, [success, order, navigate]);
 
+  // Auto-show payment form when clientSecret becomes available
+  useEffect(() => {
+    if (clientSecret && showPayment) {
+      console.log("Client Secret received:", clientSecret);
+    }
+  }, [clientSecret, showPayment]);
+
   return (
     <>
       <CheckoutSteps step1 step2 step3 />
@@ -149,18 +163,24 @@ const PlaceOrderScreen = () => {
             </ListGroup.Item>
 
             {/* Show Stripe Payment Form if Stripe is selected */}
-            {cart.paymentMethod === "Stripe" && showPayment && clientSecret && (
+            {cart.paymentMethod === "Stripe" && showPayment && (
               <ListGroup.Item>
                 <h2>Payment Details</h2>
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm
-                    clientSecret={clientSecret}
-                    orderData={{
-                      totalPrice: parseFloat(cart.totalPrice),
-                    }}
-                    onPaymentSuccess={handlePaymentSuccess}
-                  />
-                </Elements>
+                {paymentLoading ? (
+                  <Loader />
+                ) : clientSecret ? (
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm
+                      clientSecret={clientSecret}
+                      orderData={{
+                        totalPrice: parseFloat(cart.totalPrice),
+                      }}
+                      onPaymentSuccess={handlePaymentSuccess}
+                    />
+                  </Elements>
+                ) : (
+                  <Message variant="warning">Failed to initialize payment. Please try again.</Message>
+                )}
               </ListGroup.Item>
             )}
             {paymentError && (
