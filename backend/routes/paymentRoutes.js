@@ -9,13 +9,19 @@ const {protect} = require("../middleware/authMiddleware");
 // @access Private
 router.post("/create-payment-intent", protect, async (req, res) => {
   try {
-    const { totalPrice } = req.body;
+    let { totalPrice } = req.body;
     
-    if (typeof totalPrice !== "number" || totalPrice <= 0) {
+    console.log("Received totalPrice:", totalPrice, "Type:", typeof totalPrice);
+    
+    // Convert to number if it's a string
+    totalPrice = Number(totalPrice);
+    
+    if (isNaN(totalPrice) || totalPrice <= 0) {
       return res.status(400).json({ message: "Valid totalPrice must be provided" });
     }
 
     const amount = Math.round(totalPrice * 100); // Convert to cents
+    console.log("Payment amount in cents:", amount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
