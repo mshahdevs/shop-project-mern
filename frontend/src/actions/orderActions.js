@@ -1,4 +1,4 @@
-import { ORDER_CREATE_SUCCESS,ORDER_CREATE_FAIL,ORDER_CREATE_REQUEST, ORDER_DETAILS_REQUEST, ORDER_DETAILS_SUCCESS, ORDER_DETAILS_FAIL, ORDER_PAY_REQUEST, ORDER_PAY_SUCCESS, ORDER_PAY_FAIL, PAYMENT_INTENT_REQUEST, PAYMENT_INTENT_SUCCESS, PAYMENT_INTENT_FAIL } from "../constants/orderConstant";
+import { ORDER_CREATE_SUCCESS,ORDER_CREATE_FAIL,ORDER_CREATE_REQUEST, ORDER_DETAILS_REQUEST, ORDER_DETAILS_SUCCESS, ORDER_DETAILS_FAIL, ORDER_PAY_REQUEST, ORDER_PAY_SUCCESS, ORDER_PAY_FAIL, PAYMENT_INTENT_REQUEST, PAYMENT_INTENT_SUCCESS, PAYMENT_INTENT_FAIL, PAYMENT_INTENT_RESET, ORDER_CREATE_RESET } from "../constants/orderConstant";
 import axios from "axios";
 export const createOrder = (order) => async (dispatch , getState) =>{
     try{
@@ -110,4 +110,9 @@ export const createPaymentIntent = (totalPrice) => async (dispatch, getState) =>
             payload: error.response && error.response.data.message ? error.response.data.message : error.message
         })
     }
+}
+
+export const resetOrder = () => (dispatch) => {
+    dispatch({ type: ORDER_CREATE_RESET });
+    dispatch({ type: PAYMENT_INTENT_RESET });
 }
