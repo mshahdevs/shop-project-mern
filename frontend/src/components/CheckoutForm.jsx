@@ -1,5 +1,5 @@
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { useSelector } from "react-redux";
 import { Row, Col, Button } from "react-bootstrap";
@@ -12,27 +12,14 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [cardComplete, setCardComplete] = useState(false);
-  const [elementsReady, setElementsReady] = useState(false);
 
-  // Check if Elements are ready
-  React.useEffect(() => {
-    if (stripe && elements) {
-      setElementsReady(true);
-      console.log("✓ Stripe & Elements Ready");
-    }
-  }, [stripe, elements]);
-
-  // Debug logging
-  React.useEffect(() => {
-    console.log("CheckoutForm State:", {
-      elementsReady,
-      cardComplete,
-      loading,
-      clientSecretExists: !!clientSecret,
-      stripeLoaded: !!stripe,
-      elementsLoaded: !!elements,
+  useEffect(() => {
+    console.log("CheckoutForm - Stripe & Elements Status:", {
+      stripeReady: !!stripe,
+      elementsReady: !!elements,
+      clientSecretReady: !!clientSecret,
     });
-  }, [elementsReady, cardComplete, loading, clientSecret, stripe, elements]);
+  }, [stripe, elements, clientSecret]);
 
   const cardElementOptions = {
     hidePostalCode: false,
@@ -72,7 +59,12 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
     e.preventDefault();
     
     if (!stripe || !elements) {
-      setError("Stripe not loaded. Please try again.");
+      setError("Stripe is loading. Please wait a moment and try again.");
+      return;
+    }
+
+    if (!clientSecret) {
+      setError("Payment initialization failed. Please go back and try again.");
       return;
     }
 
@@ -97,7 +89,7 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
         setError(stripeError.message);
         setLoading(false);
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Payment success → pass to placeorder
+        console.log("✓ Payment succeeded:", paymentIntent);
         onPaymentSuccess(paymentIntent);
       } else if (paymentIntent && paymentIntent.status === "requires_action") {
         setError("Payment requires additional authentication. Please check your card.");
@@ -112,17 +104,17 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
     }
   };
 
+  if (!stripe || !elements) {
+    return <Message variant="info">Initializing payment form...</Message>;
+  }
+
   return (
     <form onSubmit={handleSubmit}>
-      {!elementsReady && (
-        <Message variant="info"> Loading payment form...</Message>
-      )}
-      
       <Row className="mb-3">
         <Col>
           <label className="mb-2" style={{ display: "block", fontSize: "14px", fontWeight: "500", color: "#333" }}>
             Card Details
-            {!cardComplete && elementsReady && <span style={{ color: "#dc3545", marginLeft: "4px" }}>*</span>}
+            {!cardComplete && <span style={{ color: "#dc3545", marginLeft: "4px" }}>*</span>}
           </label>
           <div style={{ 
             padding: "12px 15px", 
@@ -134,23 +126,19 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
             alignItems: "center",
             boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
           }}>
-            {elementsReady ? (
-              <div style={{ width: "100%" }}>
-                <CardElement 
-                  options={cardElementOptions} 
-                  onChange={handleCardChange}
-                />
-              </div>
-            ) : (
-              <span style={{ color: "#999", fontSize: "14px" }}>Initializing Stripe...</span>
-            )}
+            <div style={{ width: "100%" }}>
+              <CardElement 
+                options={cardElementOptions} 
+                onChange={handleCardChange}
+              />
+            </div>
           </div>
           {cardComplete && (
             <small style={{ color: "#28a745", fontSize: "12px", marginTop: "4px", display: "block" }}>
               ✓ Card details valid
             </small>
           )}
-          {elementsReady && !cardComplete && (
+          {!cardComplete && (
             <small style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px", display: "block" }}>
               Please enter your card details
             </small>
@@ -163,7 +151,7 @@ const CheckoutForm = ({ clientSecret, orderData, onPaymentSuccess }) => {
       <Button
         className="btn btn-primary mt-3 w-100"
         type="submit"
-        disabled={!elementsReady || loading || !cardComplete}
+        disabled={loading || !cardComplete}
       >
         {loading ? "Processing Payment..." : `Pay $${orderData?.totalPrice?.toFixed(2) || "0.00"}`}
       </Button>
