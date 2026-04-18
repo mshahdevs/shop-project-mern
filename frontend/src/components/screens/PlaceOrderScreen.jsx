@@ -1,13 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Row, Col, ListGroup, Image, Card } from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutSteps from "../CheckoutSteps";
 import Message from "../Message";
 import Loader from "../Loader";
 import CheckoutForm from "../CheckoutForm";
+import PayPalButton from "../PayPalButton";
 import { createOrder, createPaymentIntent, resetOrder } from "../../actions/orderActions";
 
 const stripePromise = loadStripe("pk_test_51PTJjMEHU399Ls8ZKijlXdMh3uLOhwJnHezb5wLxLWCmWxoCVrNFk8uLdowJweAUI52MvnEEPnmKDw4GAmxpoZeN00TijGwERD");
@@ -59,13 +60,19 @@ const PlaceOrderScreen = () => {
     if (cart.paymentMethod === "Stripe") {
       // Initialize Stripe payment
       try {
-        await dispatch(createPaymentIntent(parseFloat(cart.totalPrice)));
+        console.log("Creating payment intent for amount:", parseFloat(cart.totalPrice));
+        const result = await dispatch(createPaymentIntent(parseFloat(cart.totalPrice)));
+        console.log("Payment intent created, result:", result);
         setShowPayment(true);
       } catch (err) {
         console.error("Error creating payment intent:", err);
       }
+    } else if (cart.paymentMethod === "PayPal") {
+      // Show PayPal button
+      console.log("Showing PayPal payment option");
+      setShowPayment(true);
     } else {
-      
+      // Other payment methods (create order directly)
       dispatch(
         createOrder({
           orderItems: cart.cartItems,
@@ -80,8 +87,8 @@ const PlaceOrderScreen = () => {
     }
   };
 
-  // Handle Stripe payment success
-  const handlePaymentSuccess = (paymentIntent) => {
+  // Handle Stripe payment success - memoized to prevent re-renders
+  const handlePaymentSuccess = useCallback((paymentIntent) => {
     // Create order after successful payment
     dispatch(
       createOrder({
@@ -104,7 +111,45 @@ const PlaceOrderScreen = () => {
         },
       })
     );
-  };
+  }, [dispatch, cart, userInfo]);
+
+  // Handle PayPal payment success - memoized to prevent re-renders
+  const handlePayPalSuccess = useCallback((paymentData) => {
+    dispatch(
+      createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress: cart.shippingAddress,
+        paymentMethod: "PayPal",
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+
+        isPaid: true,
+        paidAt: new Date().toISOString(),
+
+        paymentResult: {
+          id: paymentData.id,
+          status: paymentData.status,
+          update_time: paymentData.update_time,
+          email_address: paymentData.email_address,
+        },
+      })
+    );
+  }, [dispatch, cart, userInfo]);
+
+  // Memoize PayPal order data to prevent unnecessary re-renders in PayPalButton
+  const paypalOrderData = useMemo(() => ({
+    totalPrice: parseFloat(cart.totalPrice),
+    itemsPrice: parseFloat(cart.itemsPrice),
+    shippingPrice: parseFloat(cart.shippingPrice),
+    taxPrice: parseFloat(cart.taxPrice),
+  }), [cart.totalPrice, cart.itemsPrice, cart.shippingPrice, cart.taxPrice]);
+
+  // Memoize error handler for PayPal
+  const handlePayPalError = useCallback((err) => {
+    console.error("PayPal Error:", err);
+  }, []);
 
   useEffect(() => {
     if (success && order) {
@@ -115,9 +160,16 @@ const PlaceOrderScreen = () => {
   // Auto-show payment form when clientSecret becomes available
   useEffect(() => {
     if (clientSecret && showPayment) {
-      console.log("Client Secret received:", clientSecret);
+      console.log("✓ Client Secret received and showPayment is true:", clientSecret.substring(0, 30) + "...");
     }
   }, [clientSecret, showPayment]);
+
+  // Log when Stripe form should be shown
+  useEffect(() => {
+    if (cart.paymentMethod === "Stripe" && showPayment) {
+      console.log("Stripe payment form should be shown. paymentLoading:", paymentLoading, "clientSecret exists:", !!clientSecret);
+    }
+  }, [cart.paymentMethod, showPayment, paymentLoading, clientSecret]);
 
   return (
     <>
@@ -162,7 +214,17 @@ const PlaceOrderScreen = () => {
               )}
             </ListGroup.Item>
 
-            {/* Show Stripe Payment Form if Stripe is selected */}
+            {/* Show PayPal Button if PayPal is selected */}
+            {cart.paymentMethod === "PayPal" && showPayment && (
+              <ListGroup.Item>
+                <h2>PayPal Payment</h2>
+                <PayPalButton
+                  orderData={paypalOrderData}
+                  onPaymentSuccess={handlePayPalSuccess}
+                  onError={handlePayPalError}
+                />
+              </ListGroup.Item>
+            )}
             {cart.paymentMethod === "Stripe" && showPayment && (
               <ListGroup.Item>
                 <h2>Payment Details</h2>
@@ -235,7 +297,7 @@ const PlaceOrderScreen = () => {
               <ListGroup.Item>
                 {cart.paymentMethod === "Stripe" && showPayment ? (
                   paymentLoading && <Loader />
-                ) : (
+                ) : cart.paymentMethod === "PayPal" && showPayment ? null : (
                   <Button
                     type="button"
                     className="btn-block w-100"
