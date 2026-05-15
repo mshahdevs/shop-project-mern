@@ -1,8 +1,10 @@
 import { Link ,useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation } from "react-router-dom";
 import Message from "../Message";
 import Loader from "../Loader";
+import {toast} from 'react-toastify';
 import { register } from "../../actions/userAction";
 import FormContainer from "../FormContainer";
 import { Button, Col, Form, Row, Card } from "react-bootstrap";
@@ -19,6 +21,11 @@ const RegisterScreen = () => {
   const dispatch = useDispatch();
   const userRegister = useSelector((state) => state.userRegister);
   const { loading, error, userInfo } = userRegister;
+  useEffect(() => {
+  if (error) {
+    toast.error(error);
+  }
+}, [error])
   useEffect(() => {
     if (userInfo) {
       navigate(redirect);
