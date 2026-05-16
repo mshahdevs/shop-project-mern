@@ -1,20 +1,21 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const stripe = require("../config/stripe");
-const axios = require("axios");
-const Order = require("../models/orderModel");
-const {protect} = require("../middleware/authMiddleware");
+const stripe = require('../config/stripe');
+const axios = require('axios');
+const Order = require('../models/orderModel');
+const { protect } = require('../middleware/authMiddleware');
 
 // PayPal API base URL
-const PAYPAL_API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://api.paypal.com' 
-  : 'https://api.sandbox.paypal.com';
+const PAYPAL_API_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://api.paypal.com'
+    : 'https://api.sandbox.paypal.com';
 
 // Get PayPal access token
 const getPayPalAccessToken = async () => {
   try {
     const auth = Buffer.from(
-      `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
+      `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`,
     ).toString('base64');
 
     const response = await axios.post(
@@ -22,10 +23,10 @@ const getPayPalAccessToken = async () => {
       'grant_type=client_credentials',
       {
         headers: {
-          'Authorization': `Basic ${auth}`,
+          Authorization: `Basic ${auth}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
 
     return response.data.access_token;
@@ -80,10 +81,10 @@ router.post('/paypal/create-order', protect, async (req, res) => {
       orderData,
       {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
 
     res.json({
@@ -91,10 +92,13 @@ router.post('/paypal/create-order', protect, async (req, res) => {
       status: response.data.status,
     });
   } catch (error) {
-    console.error('PayPal Create Order Error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    console.error(
+      'PayPal Create Order Error:',
+      error.response?.data || error.message,
+    );
+    res.status(500).json({
       message: 'Error creating PayPal order',
-      error: error.response?.data?.message || error.message 
+      error: error.response?.data?.message || error.message,
     });
   }
 });
@@ -117,10 +121,10 @@ router.post('/paypal/capture-payment', protect, async (req, res) => {
       {},
       {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
 
     if (response.data.status === 'COMPLETED') {
@@ -137,10 +141,13 @@ router.post('/paypal/capture-payment', protect, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('PayPal Capture Error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    console.error(
+      'PayPal Capture Error:',
+      error.response?.data || error.message,
+    );
+    res.status(500).json({
       message: 'Error capturing PayPal payment',
-      error: error.response?.data?.message || error.message 
+      error: error.response?.data?.message || error.message,
     });
   }
 });
@@ -153,25 +160,27 @@ router.get('/paypal-client-id', (req, res) => {
 // @desc Create payment intent for Stripe
 // @route POST /api/payments/create-payment-intent
 // @access Private
-router.post("/create-payment-intent", protect, async (req, res) => {
+router.post('/create-payment-intent', protect, async (req, res) => {
   try {
     let { totalPrice } = req.body;
-    
-    console.log("Received totalPrice:", totalPrice, "Type:", typeof totalPrice);
-    
+
+    console.log('Received totalPrice:', totalPrice, 'Type:', typeof totalPrice);
+
     // Convert to number if it's a string
     totalPrice = Number(totalPrice);
-    
+
     if (isNaN(totalPrice) || totalPrice <= 0) {
-      return res.status(400).json({ message: "Valid totalPrice must be provided" });
+      return res
+        .status(400)
+        .json({ message: 'Valid totalPrice must be provided' });
     }
 
     const amount = Math.round(totalPrice * 100); // Convert to cents
-    console.log("Payment amount in cents:", amount);
+    console.log('Payment amount in cents:', amount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "usd",
+      currency: 'usd',
       metadata: {
         userId: req.user._id.toString(),
       },
@@ -182,7 +191,7 @@ router.post("/create-payment-intent", protect, async (req, res) => {
       paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
-    console.error("Payment Intent Error:", error);
+    console.error('Payment Intent Error:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -190,12 +199,14 @@ router.post("/create-payment-intent", protect, async (req, res) => {
 // @desc Retrieve payment intent
 // @route GET /api/payments/payment-intent/:intentId
 // @access Private
-router.get("/payment-intent/:intentId", protect, async (req, res) => {
+router.get('/payment-intent/:intentId', protect, async (req, res) => {
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(req.params.intentId);
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+      req.params.intentId,
+    );
     res.json(paymentIntent);
   } catch (error) {
-    console.error("Retrieve Payment Intent Error:", error);
+    console.error('Retrieve Payment Intent Error:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -203,22 +214,22 @@ router.get("/payment-intent/:intentId", protect, async (req, res) => {
 // @desc Confirm payment (optional - for additional validation)
 // @route POST /api/payments/confirm-payment
 // @access Private
-router.post("/confirm-payment", protect, async (req, res) => {
+router.post('/confirm-payment', protect, async (req, res) => {
   try {
     const { paymentIntentId } = req.body;
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-    if (paymentIntent.status === "succeeded") {
+    if (paymentIntent.status === 'succeeded') {
       res.json({
         success: true,
-        message: "Payment confirmed successfully",
+        message: 'Payment confirmed successfully',
         paymentIntent,
       });
-    } else if (paymentIntent.status === "processing") {
+    } else if (paymentIntent.status === 'processing') {
       res.json({
         success: false,
-        message: "Payment is being processed",
+        message: 'Payment is being processed',
         paymentIntent,
       });
     } else {
@@ -229,7 +240,7 @@ router.post("/confirm-payment", protect, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Confirm Payment Error:", error);
+    console.error('Confirm Payment Error:', error);
     res.status(500).json({ message: error.message });
   }
 });
