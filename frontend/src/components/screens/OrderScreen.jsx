@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 const OrderScreen = () => {
+  const navigate = useNavigate();
   const [sdkReady, setSdkReady] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const orderDetails = useSelector((state) => state.orderDetails);
@@ -43,7 +44,7 @@ const OrderScreen = () => {
     if (!order || order._id !== id) {
       dispatch(getOrderDetails(id));
     }
-  }, [dispatch, id]);
+  }, [dispatch, order, id]);
 
   useEffect(() => {
     if (error) {
