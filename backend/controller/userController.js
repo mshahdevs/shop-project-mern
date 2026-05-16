@@ -1,5 +1,5 @@
-const User = require("../models/userModel");
-const generateToken = require("../utils/generateToken");
+const User = require('../models/userModel');
+const generateToken = require('../utils/generateToken');
 // @desc    Get user profile
 // @route   GET /api/users/login
 // @access  Public
@@ -17,7 +17,7 @@ const authUser = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -30,7 +30,9 @@ const userRegister = async (req, res) => {
 
     // basic validation
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email and password are required" });
+      return res
+        .status(400)
+        .json({ message: 'Name, email and password are required' });
     }
 
     // normalize email
@@ -38,7 +40,7 @@ const userRegister = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     const user = await User.create({ name, email, password });
@@ -51,10 +53,10 @@ const userRegister = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      return res.status(400).json({ message: "Invalid user data" });
+      return res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    console.error("userRegister error:", error);
+    console.error('userRegister error:', error);
     if (res.headersSent) return;
     res.status(500).json({ message: error.message });
   }
@@ -64,7 +66,7 @@ const getUserProfile = async (req, res) => {
     if (!req.user) {
       res
         .status(401)
-        .json({ message: "Not authorized, no user attached to request" });
+        .json({ message: 'Not authorized, no user attached to request' });
       return;
     }
 
@@ -77,10 +79,19 @@ const getUserProfile = async (req, res) => {
         isAdmin: user.isAdmin,
       });
     } else {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error("getUserProfile error:", error);
+    console.error('getUserProfile error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+const getUsers = async (req, res) => {
+  try {
+    const user = await User.find({});
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('getUsers error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -90,7 +101,7 @@ const updateUserProfile = async (req, res) => {
     if (!req.user) {
       res
         .status(401)
-        .json({ message: "Not authorized, no user attached to request" });
+        .json({ message: 'Not authorized, no user attached to request' });
       return;
     }
 
@@ -98,24 +109,30 @@ const updateUserProfile = async (req, res) => {
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      if(req.body.password){
+      if (req.body.password) {
         user.password = req.body.password;
       }
 
       const updatedUser = await user.save();
       res.json({
-        _id:updatedUser._id,
-        name:updatedUser.name,
-        email:updatedUser.email,
-        isAdmin:updatedUser.isAdmin,
-        token:generateToken(updatedUser._id),
-      })
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+        token: generateToken(updatedUser._id),
+      });
     } else {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error("getUserProfile error:", error);
+    console.error('getUserProfile error:', error);
     res.status(500).json({ message: error.message });
   }
 };
-module.exports = { authUser, getUserProfile, updateUserProfile,userRegister };
+module.exports = {
+  authUser,
+  getUserProfile,
+  updateUserProfile,
+  userRegister,
+  getUsers,
+};
