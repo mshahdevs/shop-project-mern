@@ -6,10 +6,27 @@ const notFound = (req, res, next) => {
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+  let message = err.message;
+  if (
+    err.message.includes('timed out') ||
+    err.message.includes('Network Error') ||
+    err.name === 'MongoNetworkError'
+  ) {
+    statusCode = 503;
+    message = 'Service Unavailable. Please try again later.';
+  }
+  if (err.name === 'JsonWebTokenError') {
+    statusCode = 401;
+    message = 'Invalid token. Please login again.';
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    statusCode = 401;
+    message = 'Session expired. Please login again.';
+  }
+  res.status(statusCode).json({
+    message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 };
 
