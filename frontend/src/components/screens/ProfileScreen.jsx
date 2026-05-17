@@ -21,10 +21,12 @@ const ProfileScreen = () => {
   const userDetails = useSelector((state) => state.userDetails);
   const orderMyList = useSelector((state) => state.orderMyList);
   const { loading: loadingOrders, error: errorOrders, orders } = orderMyList;
-  console.log(orders);
-  const { loading, error, user } = userDetails;
+
+  const { loading, error, user = {} } = userDetails;
+  console.log('user', user);
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
+  console.log('userInfo', userInfo);
   const userUpdateProfile = useSelector((state) => state.userUpdateProfile);
 
   const { success } = userUpdateProfile;
@@ -32,7 +34,7 @@ const ProfileScreen = () => {
     if (!userInfo) {
       navigate('/login');
     } else {
-      if (!user.name) {
+      if (!user?.name) {
         dispatch(getUserDetails('profile'));
         dispatch(listMyOrders());
       } else {
