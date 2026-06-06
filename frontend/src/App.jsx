@@ -23,6 +23,8 @@ import PaymentScreen from './components/screens/PaymentScreen';
 import PlaceOrderScreen from './components/screens/PlaceOrderScreen';
 import OrderScreen from './components/screens/OrderScreen';
 import UserListScreen from './components/screens/UserListScreen';
+import UserEditScreen from './components/screens/UserEditScreen';
+import ProductListScreen from './components/screens/ProductListScreen';
 
 function App() {
   return (
@@ -54,7 +56,9 @@ function App() {
               <Route path='/register' element={<RegisterScreen />} />
               <Route path='/profile' element={<ProfileScreen />} />
               <Route path='/admin/userlist' element={<UserListScreen />} />
+              <Route path='/admin/user/:id/edit' element={<UserEditScreen />} />
               <Route path='/order/:id' element={<OrderScreen />} />
+              <Route path='/admin/productlist' element={<ProductListScreen />} />
             </Routes>
           </Container>
         </main>
