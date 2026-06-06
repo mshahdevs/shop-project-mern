@@ -1,4 +1,4 @@
-const Product = require("../models/productModel.js");
+const Product = require('../models/productModel.js');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -19,14 +19,26 @@ const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (product) {
-     res.status(200).json(product);
+      res.status(200).json(product);
     } else {
       res.status(404);
-      throw new Error("Product not found");
+      throw new Error('Product not found');
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { getProducts, getProductById };
+const deleteProduct = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (product) {
+    await Product.deleteOne({ _id: req.params.id });
+    res.status(200).json({ message: 'Product removed' });
+  } else {
+    return res.status(404).json({
+      message: 'Product not found',
+    });
+  }
+};
+
+module.exports = { getProducts, getProductById, deleteProduct };

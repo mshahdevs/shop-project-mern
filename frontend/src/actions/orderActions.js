@@ -15,6 +15,7 @@ import {
   ORDER_CREATE_RESET,
   ORDER_LIST_MY_REQUEST,
   ORDER_LIST_MY_SUCCESS,
+  ORDER_LIST_MY_FAIL,
 } from '../constants/orderConstant';
 import axios from 'axios';
 export const createOrder = (order) => async (dispatch, getState) => {
