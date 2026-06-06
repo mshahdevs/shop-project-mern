@@ -94,8 +94,7 @@ const OrderScreen = () => {
         console.error(err);
       }
     };
-
-    if (order && !order.isPaid && userInfo) {
+    if (order && Number(order.totalPrice) > 0 && !order.isPaid && userInfo) {
       createPaymentIntent();
     }
   }, [order, userInfo]);
