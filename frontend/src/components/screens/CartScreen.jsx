@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
-import { addToCart, removeFromCart } from "../../actions/cartActions";
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
+import { addToCart, removeFromCart } from '../../actions/cartActions';
 import {
   ListGroup,
   Row,
@@ -10,13 +10,13 @@ import {
   Form,
   Button,
   Card,
-} from "react-bootstrap";
-import Message from "../Message";
+} from 'react-bootstrap';
+import Message from '../Message';
 
 const CartScreen = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const qty = location.search ? Number(location.search.split("=")[1]) : 1;
+  const qty = location.search ? Number(location.search.split('=')[1]) : 1;
   const { cartItems } = useSelector((state) => state.cart);
   console.log(cartItems);
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const CartScreen = () => {
     const run = async () => {
       if (id) {
         await dispatch(addToCart(id, qty));
-        navigate("/cart", { replace: true });
+        navigate('/cart', { replace: true });
       }
     };
     run();
@@ -34,7 +34,7 @@ const CartScreen = () => {
     dispatch(removeFromCart(id));
   };
   const checkoutHandler = () => {
-    navigate("/login?redirect=shipping");
+    navigate('/login?redirect=/shipping');
   };
   return (
     <Row>
@@ -42,7 +42,7 @@ const CartScreen = () => {
         <h1>Shopping Cart</h1>
         {cartItems.length === 0 ? (
           <Message>
-            Your cart is empty <Link to='/'>Go Back</Link>{" "}
+            Your cart is empty <Link to='/'>Go Back</Link>{' '}
           </Message>
         ) : (
           <ListGroup variant='flush'>
@@ -62,7 +62,7 @@ const CartScreen = () => {
                       value={item.qty}
                       onChange={(e) =>
                         dispatch(
-                          addToCart(item.product, Number(e.target.value))
+                          addToCart(item.product, Number(e.target.value)),
                         )
                       }
                     >
@@ -93,7 +93,7 @@ const CartScreen = () => {
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>
-                {" "}
+                {' '}
                 Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
                 items
               </h2>
