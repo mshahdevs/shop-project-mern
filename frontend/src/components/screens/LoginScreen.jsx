@@ -1,31 +1,37 @@
-import { Link ,useLocation,useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import Message from "../Message";
-import Loader from "../Loader";
-import { login } from "../../actions/userAction";
-import FormContainer from "../FormContainer";
-import { Button, Col, Form, Row, Card } from "react-bootstrap";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import Message from '../Message';
+import Loader from '../Loader';
+import { login } from '../../actions/userAction';
+import FormContainer from '../FormContainer';
+import { Button, Col, Form, Row, Card } from 'react-bootstrap';
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const location = useLocation();
-
-  const redirect = location.search
-  ? "/" + location.search.split("=")[1]
-  : "/";
   const navigate = useNavigate();
+
+  // Safely extract redirect parameter using URLSearchParams
+  const params = new URLSearchParams(location.search);
+  const redirectValue = params.get('redirect') || '';
+  // Ensure redirect has a leading slash to avoid relative path issues
+  const redirect = redirectValue
+    ? redirectValue.startsWith('/')
+      ? redirectValue
+      : `/${redirectValue}`
+    : '/';
   const dispatch = useDispatch();
   const userLogin = useSelector((state) => state.userLogin);
   const { loading, error, userInfo } = userLogin;
 
-console.log(redirect)
-useEffect(() => {
-  if (userInfo) {
-    navigate(redirect);
-  }
-}, [navigate, userInfo, redirect]);
+  console.log(redirect);
+  useEffect(() => {
+    if (userInfo) {
+      navigate(redirect);
+    }
+  }, [navigate, userInfo, redirect]);
 
   // useEffect(() => {
   //   if (userInfo) {
@@ -39,46 +45,48 @@ useEffect(() => {
 
   return (
     <FormContainer>
-      {error && <Message variant="danger">{error}</Message>}
+      {error && <Message variant='danger'>{error}</Message>}
       {loading && <Loader />}
-      <Card className="p-4 shadow-sm mt-4">
+      <Card className='p-4 shadow-sm mt-4'>
         <Card.Body>
-          <h1 style={{ fontWeight: 600 }} className="mb-3 text-center">
+          <h1 style={{ fontWeight: 600 }} className='mb-3 text-center'>
             Sign In
           </h1>
 
           <Form onSubmit={submitHandler}>
-            <Form.Group controlId="email" className="mb-3">
+            <Form.Group controlId='email' className='mb-3'>
               <Form.Label style={{ fontWeight: 600 }}>Email Address</Form.Label>
               <Form.Control
-                type="email"
-                placeholder="Enter email"
+                type='email'
+                placeholder='Enter email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="py-2"
+                className='py-2'
               />
             </Form.Group>
 
-            <Form.Group controlId="password" className="mb-3">
+            <Form.Group controlId='password' className='mb-3'>
               <Form.Label style={{ fontWeight: 600 }}>Password</Form.Label>
               <Form.Control
-                type="password"
-                placeholder="Enter password"
+                type='password'
+                placeholder='Enter password'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="py-2"
+                className='py-2'
               />
             </Form.Group>
 
-            <Button type="submit" variant="primary" className="w-100 mt-2">
+            <Button type='submit' variant='primary' className='w-100 mt-2'>
               Sign In
             </Button>
           </Form>
 
-          <Row className="mt-3">
-            <Col className="text-center">
+          <Row className='mt-3'>
+            <Col className='text-center'>
               New Customer?{' '}
-              <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
+              <Link
+                to={redirect ? `/register?redirect=${redirect}` : '/register'}
+              >
                 Register
               </Link>
             </Col>
@@ -87,6 +95,6 @@ useEffect(() => {
       </Card>
     </FormContainer>
   );
-}
+};
 
-export default LoginScreen
+export default LoginScreen;
