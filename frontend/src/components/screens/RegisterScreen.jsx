@@ -16,7 +16,11 @@ const RegisterScreen = () => {
   const [message, setMessage] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const redirect = location.search ? location.search.split("=")[1] : '/';
+  // Safely extract redirect parameter using URLSearchParams
+  const params = new URLSearchParams(location.search);
+  const redirectValue = params.get('redirect') || '';
+  // Ensure redirect has a leading slash to avoid relative path issues
+  const redirect = redirectValue ? (redirectValue.startsWith('/') ? redirectValue : `/${redirectValue}`) : '/';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userRegister = useSelector((state) => state.userRegister);
