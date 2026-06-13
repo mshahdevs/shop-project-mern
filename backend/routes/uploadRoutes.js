@@ -1,24 +1,24 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const upload = require("../middleware/uploadMiddleware");
+const upload = require('../middleware/uploadMiddleware');
 
-router.post("/", upload.single("image"), async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    console.log("Upload request received");
+    // console.log("Upload request received");
     if (!req.file) {
       return res.status(400).json({
-        message: "No image file provided",
+        message: 'No image file provided',
       });
     }
-    console.log("File details:", req.file);
+    // console.log('File details:', req.file);
     res.json({
-      message: "Image uploaded successfully",
+      message: 'Image uploaded successfully',
       image: req.file.path,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error('Upload error:', error);
     res.status(500).json({
-      message: "Error uploading image",
+      message: 'Error uploading image',
       error: error.message,
     });
   }

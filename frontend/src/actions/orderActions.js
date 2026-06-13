@@ -161,15 +161,15 @@ export const createPaymentIntent =
         },
       };
 
-      console.log('API calling with:', totalPrice);
+      // console.log('API calling with:', totalPrice);
 
       const { data } = await axios.post(
         `/api/payments/create-payment-intent`,
         { totalPrice },
         config,
       );
-      console.log('API RESPONSE FULL:', data);
-      console.log('CLIENT SECRET:', data.clientSecret);
+      // console.log('API RESPONSE FULL:', data);
+      // console.log('CLIENT SECRET:', data.clientSecret);
       dispatch({
         type: PAYMENT_INTENT_SUCCESS,
         payload: data.clientSecret,

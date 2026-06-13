@@ -18,7 +18,7 @@ const CartScreen = () => {
   const dispatch = useDispatch();
   const qty = location.search ? Number(location.search.split('=')[1]) : 1;
   const { cartItems } = useSelector((state) => state.cart);
-  console.log(cartItems);
+  // console.log(cartItems);
   const navigate = useNavigate();
   useEffect(() => {
     const run = async () => {

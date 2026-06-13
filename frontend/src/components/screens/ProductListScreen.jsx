@@ -11,7 +11,7 @@ const ProductListScreen = () => {
   const dispatch = useDispatch();
   const productListState = useSelector((state) => state.productList);
   const { loading, error, products = [] } = productListState;
-  console.log('products', products);
+  // console.log('products', products);
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
@@ -36,7 +36,7 @@ const ProductListScreen = () => {
   }, [dispatch, navigate, userInfo, successDelete]);
 
   function createProductHandler(product) {
-    console.log('create product handler');
+    // console.log('create product handler');
   }
   return (
     <>

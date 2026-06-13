@@ -164,7 +164,7 @@ router.post('/create-payment-intent', protect, async (req, res) => {
   try {
     let { totalPrice } = req.body;
 
-    console.log('Received totalPrice:', totalPrice, 'Type:', typeof totalPrice);
+    // console.log('Received totalPrice:', totalPrice, 'Type:', typeof totalPrice);
 
     // Convert to number if it's a string
     totalPrice = Number(totalPrice);
@@ -176,7 +176,7 @@ router.post('/create-payment-intent', protect, async (req, res) => {
     }
 
     const amount = Math.round(totalPrice * 100); // Convert to cents
-    console.log('Payment amount in cents:', amount);
+    // console.log('Payment amount in cents:', amount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,

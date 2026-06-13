@@ -23,10 +23,10 @@ const ProfileScreen = () => {
   const { loading: loadingOrders, error: errorOrders, orders } = orderMyList;
 
   const { loading, error, user = {} } = userDetails;
-  console.log('user', user);
+  // console.log('user', user);
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
-  console.log('userInfo', userInfo);
+  // console.log('userInfo', userInfo);
   const userUpdateProfile = useSelector((state) => state.userUpdateProfile);
 
   const { success } = userUpdateProfile;
@@ -38,7 +38,7 @@ const ProfileScreen = () => {
         dispatch(getUserDetails('profile'));
         dispatch(listMyOrders());
       } else {
-        console.log(user.name);
+        // console.log(user.name);
 
         setName(user.name);
         setEmail(user.email);

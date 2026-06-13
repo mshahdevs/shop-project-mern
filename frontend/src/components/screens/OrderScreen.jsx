@@ -100,7 +100,7 @@ const OrderScreen = () => {
   }, [order, userInfo]);
 
   const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult);
+    // console.log(paymentResult);
     dispatch(payOrder(id, paymentResult));
   };
 

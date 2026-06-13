@@ -10,7 +10,7 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
   // Step 1: Load PayPal SDK on mount
   useEffect(() => {
     if (window.paypal) {
-      console.log('✓ PayPal SDK already available');
+      // console.log('✓ PayPal SDK already available');
       setSdkLoaded(true);
       return;
     }
@@ -19,14 +19,14 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
       try {
         const response = await fetch('/api/payments/paypal-client-id');
         const { clientId } = await response.json();
-        console.log('Client ID fetched');
+        // console.log('Client ID fetched');
 
         const script = document.createElement('script');
         script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`;
         script.async = true;
 
         script.onload = () => {
-          console.log('✓ PayPal SDK loaded');
+          // console.log('✓ PayPal SDK loaded');
           setSdkLoaded(true);
         };
 
@@ -37,7 +37,7 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
 
         document.body.appendChild(script);
       } catch (err) {
-        console.error('Error fetching client ID:', err);
+        // console.error('Error fetching client ID:', err);
         setError('Failed to load PayPal');
         setLoading(false);
       }
@@ -50,16 +50,16 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
   useLayoutEffect(() => {
     // This runs synchronously after DOM mutations, ensuring ref is attached
     if (!sdkLoaded || !window.paypal || !paypalRef.current || !orderData) {
-      console.log('Not ready:', {
-        sdkLoaded,
-        hasPaypal: !!window.paypal,
-        hasRef: !!paypalRef.current,
-        hasOrderData: !!orderData,
-      });
+      // console.log('Not ready:', {
+      //   sdkLoaded,
+      //   hasPaypal: !!window.paypal,
+      //   hasRef: !!paypalRef.current,
+      //   hasOrderData: !!orderData,
+      // });
       return;
     }
 
-    console.log('✓ Ref attached, rendering PayPal button...');
+    // console.log('✓ Ref attached, rendering PayPal button...');
     renderPayPalButton();
   }, [sdkLoaded, orderData, onPaymentSuccess, onError]);
 
@@ -87,7 +87,7 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
             const result = await response.json();
             if (!response.ok) throw new Error(result.message);
 
-            console.log('✓ PayPal order created:', result.id);
+            // console.log('✓ PayPal order created:', result.id);
             return result.id;
           } catch (err) {
             console.error('Order error:', err);
@@ -116,7 +116,7 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
             const result = await response.json();
             if (!response.ok) throw new Error(result.message);
 
-            console.log('✓ Payment captured:', result.id);
+            // console.log('✓ Payment captured:', result.id);
             onPaymentSuccess({
               id: result.id,
               status: result.status,
@@ -137,13 +137,13 @@ const PayPalButton = ({ orderData, onPaymentSuccess, onError }) => {
         },
 
         onCancel: () => {
-          console.log('Payment cancelled');
+          // console.log('Payment cancelled');
           setError('Payment cancelled');
         },
       })
       .render(paypalRef.current)
       .then(() => {
-        console.log('✓ PayPal button rendered successfully');
+        // console.log('✓ PayPal button rendered successfully');
         setLoading(false);
       })
       .catch((err) => {

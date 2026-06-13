@@ -73,30 +73,30 @@ const PlaceOrderScreen = () => {
 
   // Handle placing order (PayPal flow)
   const placeOrderHandler = async () => {
-    console.log('PLACE ORDER CLICKED');
-    console.log('Payment method:', cart.paymentMethod);
+    // console.log('PLACE ORDER CLICKED');
+    // console.log('Payment method:', cart.paymentMethod);
     if (cart.paymentMethod === 'Stripe') {
       // Initialize Stripe payment
       try {
-        console.log('Starting payment intent...');
-        console.log(
-          'Creating payment intent for amount:',
-          parseFloat(cart.totalPrice),
-        );
-        console.log('BEFORE DISPATCHED');
+        // console.log('Starting payment intent...');
+        // console.log(
+        //   'Creating payment intent for amount:',
+        //   parseFloat(cart.totalPrice),
+        // );
+        // console.log('BEFORE DISPATCHED');
         const result = await dispatch(
           createPaymentIntent(parseFloat(cart.totalPrice)),
         );
-        console.log('AFTER DISPATCHED');
-        console.log('Payment intent created, result:', result);
-        console.log('Total price sent:', cart.totalPrice);
+        // console.log('AFTER DISPATCHED');
+        // console.log('Payment intent created, result:', result);
+        // console.log('Total price sent:', cart.totalPrice);
         setShowPayment(true);
       } catch (err) {
         console.error('Error creating payment intent:', err);
       }
     } else if (cart.paymentMethod === 'PayPal') {
       // Show PayPal button
-      console.log('Showing PayPal payment option');
+      // console.log('Showing PayPal payment option');
       setShowPayment(true);
     } else {
       // Other payment methods (create order directly)
@@ -196,22 +196,22 @@ const PlaceOrderScreen = () => {
   // Auto-show payment form when clientSecret becomes available
   useEffect(() => {
     if (clientSecret && showPayment) {
-      console.log(
-        '✓ Client Secret received and showPayment is true:',
-        clientSecret.substring(0, 30) + '...',
-      );
+      // console.log(
+      //   '✓ Client Secret received and showPayment is true:',
+      //   clientSecret.substring(0, 30) + '...',
+      // );
     }
   }, [clientSecret, showPayment]);
 
   // Log when Stripe form should be shown
   useEffect(() => {
     if (cart.paymentMethod === 'Stripe' && showPayment) {
-      console.log(
-        'Stripe payment form should be shown. paymentLoading:',
-        paymentLoading,
-        'clientSecret exists:',
-        !!clientSecret,
-      );
+      // console.log(
+      //   'Stripe payment form should be shown. paymentLoading:',
+      //   paymentLoading,
+      //   'clientSecret exists:',
+      //   !!clientSecret,
+      // );
     }
   }, [cart.paymentMethod, showPayment, paymentLoading, clientSecret]);
 
